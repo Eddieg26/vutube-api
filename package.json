@@ -1,0 +1,47 @@
+{
+  "name": "vutube",
+  "version": "0.0.0",
+  "description": "",
+  "main": "build/src/main.js",
+  "types": "build/src/main.d.ts",
+  "files": [
+    "build/src"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "build": "tsc",
+    "fix": "gts fix",
+    "dev": "pnpm run build && nodemon build/src/main.js",
+    "start": "node build/src/main.js"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/koa": "^2.15.0",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa__router": "^12.0.4",
+    "@types/node": "20.11.5",
+    "@types/uuid": "^9.0.8",
+    "drizzle-kit": "^0.20.14",
+    "gts": "^5.3.0",
+    "nodemon": "^3.1.0",
+    "typescript": "~5.4.3"
+  },
+  "dependencies": {
+    "@koa/router": "^12.0.1",
+    "@neondatabase/serverless": "^0.9.0",
+    "bcrypt": "^5.1.1",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.30.7",
+    "koa": "^2.15.2",
+    "koa-bodyparser": "^4.4.1",
+    "radash": "^12.1.0",
+    "redis": "^4.6.13",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  }
+}
