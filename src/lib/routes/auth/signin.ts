@@ -1,13 +1,24 @@
 import {object, string} from 'zod';
 import {Context} from '../../services';
 import {route, validate} from '../middleware';
-import {usersTable} from '../../models';
-import {eq, or} from 'drizzle-orm';
-import {ServerError, StatusCode} from '../../types';
-import bcrypt = require('bcrypt');
-import {Session} from '../../models/session';
-import {first, omit} from 'radash';
-import dayjs = require('dayjs');
+import {StatusCode} from '../../types';
+import {omit} from 'radash';
+import {findUser, raise} from '../helpers';
+
+async function signin(args: Signin, ctx: Context) {
+  const {auth, database} = ctx.services;
+  const {identifier, password} = args;
+
+  const user = await findUser(database, identifier);
+  if (!user) return raise(StatusCode.NOT_FOUND, 'User not found');
+
+  const valid = await auth.comparePassword(password, user.password);
+  if (!valid) return raise(StatusCode.UNAUTHORIZED, 'Invalid password');
+
+  auth.setSessionCookie(ctx, auth.createSession(user.id));
+
+  return omit(user, ['password']);
+}
 
 const schema = object({
   identifier: string().min(1),
@@ -15,42 +26,6 @@ const schema = object({
 });
 
 type Signin = typeof schema._type;
-
-async function signin(args: Signin, ctx: Context) {
-  const {identifier, password} = args;
-  const user = first(
-    await ctx.services.database
-      .selectDistinct()
-      .from(usersTable)
-      .where(
-        or(
-          eq(usersTable.username, identifier),
-          eq(usersTable.email, identifier)
-        )
-      )
-  );
-
-  if (!user) throw ServerError.raise(StatusCode.NOT_FOUND, 'User not found');
-
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid)
-    throw ServerError.raise(StatusCode.UNAUTHORIZED, 'Invalid password');
-
-  const session = new Session(
-    ctx.services.database.generateId(),
-    user.id,
-    dayjs().add(1, 'month').toDate()
-  );
-
-  await ctx.services.redis.set(`session:${session.id}`, session);
-
-  ctx.cookies.set('session', JSON.stringify(session), {
-    secure: ctx.state.config.env === 'production',
-    expires: session.expiresAt,
-  });
-
-  return omit(user, ['password']);
-}
 
 export default route(
   '/signin',

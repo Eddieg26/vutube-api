@@ -4,8 +4,9 @@ import {Config} from '../types';
 import {Database} from './database';
 import {Redis} from './redis';
 import {VideoStorage} from './storage';
+import {Auth} from './auth';
 
-export {Database, Redis};
+export {Database, Redis, VideoStorage, Auth};
 
 export type AppContext = {
   services: Services;
@@ -20,6 +21,7 @@ export type AppState = {
 export type Context = Koa.ParameterizedContext<AppState, AppContext>;
 
 export class Services {
+  auth: Auth;
   database: Database;
   redis: Redis;
   videoStorage: VideoStorage;
@@ -28,5 +30,6 @@ export class Services {
     this.database = new Database(config.dbUrl);
     this.redis = new Redis();
     this.videoStorage = new VideoStorage();
+    this.auth = new Auth();
   }
 }

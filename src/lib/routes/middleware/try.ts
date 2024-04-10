@@ -4,8 +4,8 @@ import {ServerError, StatusCode} from '../../types';
 export function tryRoute<T>(route: (ctx: Context) => Promise<T>) {
   return async (ctx: Context) => {
     try {
-      ctx.status = StatusCode.OK;
       ctx.body = await route(ctx);
+      ctx.status = StatusCode.OK;
     } catch (e) {
       if (e instanceof ServerError) {
         ctx.status = e.status;

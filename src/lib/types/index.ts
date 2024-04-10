@@ -4,6 +4,7 @@ export class Config {
   port: number;
   env: Environment;
   dbUrl: string;
+  jwtSecret: string;
 
   constructor() {
     this.port = process.env.PORT
@@ -11,14 +12,16 @@ export class Config {
       : (undefined as unknown as number);
     this.env = process.env.ENV as Environment;
     this.dbUrl = process.env.DB_URL as string;
+    this.jwtSecret = process.env.JWT_SECRET as string;
   }
 
   validate(): Config {
     const schema = Config.schema();
     const validated = schema.safeParse({
-      PORT: this.port,
-      ENV: this.env,
-      DB_URL: this.dbUrl,
+      port: this.port,
+      env: this.env,
+      dbUrl: this.dbUrl,
+      jwtSecret: this.jwtSecret,
     });
 
     if (!validated.success) {
@@ -31,9 +34,10 @@ export class Config {
 
   static schema() {
     return object({
-      PORT: number(),
-      ENV: zenum(['development', 'production', 'test'] as const),
-      DB_URL: string(),
+      port: number(),
+      env: zenum(['development', 'production', 'test'] as const),
+      dbUrl: string(),
+      jwtSecret: string(),
     });
   }
 }

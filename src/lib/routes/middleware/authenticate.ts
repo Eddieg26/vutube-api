@@ -1,61 +1,20 @@
 import {Context} from '../../services';
-import {StatusCode} from '../../types';
-import {object, string, date} from 'zod';
-import {usersTable} from '../../models';
-import {eq} from 'drizzle-orm';
-import {first} from 'radash';
-
-const sessionSchema = object({
-  id: string(),
-  userId: string(),
-  expiresAt: date(),
-});
+import {findUserById} from '../helpers';
 
 export function authenticate(route: (ctx: Context) => Promise<void>) {
   return async (ctx: Context) => {
-    if (!ctx.cookies.get('session')) {
-      ctx.status = StatusCode.UNAUTHORIZED;
-      ctx.body = 'Unauthorized';
-      return;
-    }
+    const {auth, database} = ctx.services;
+    
+    const session = auth.readSessionCookie(ctx);
+    if (!session) return auth.setUnauthorized(ctx, 'Unauthorized');
 
-    const parsed = JSON.parse(ctx.cookies.get('session') ?? '');
-    const validated = sessionSchema.safeParse({
-      id: parsed.id,
-      userId: parsed.userId,
-      expiresAt: new Date(parsed.expiresAt),
-    });
+    if (session.expiresAt < new Date())
+      return auth.setUnauthorized(ctx, 'Session expired');
 
-    if (!validated.success) {
-      ctx.status = StatusCode.UNAUTHORIZED;
-      ctx.body = 'Session invalid';
-      return;
-    }
+    const user = await findUserById(database, session.userId);
+    if (!user) return auth.setUnauthorized(ctx, 'User not found');
 
-    if (validated.data.expiresAt < new Date()) {
-      ctx.services.redis.delete(`session:${validated.data.id}`);
-      ctx.cookies.set('session', '');
-      ctx.status = StatusCode.UNAUTHORIZED;
-      ctx.body = 'Session expired';
-      return;
-    }
-
-    const user = first(
-      await ctx.services.database
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, validated.data.userId))
-    );
-
-    if (!user) {
-      ctx.services.redis.delete(`session:${validated.data.id}`);
-      ctx.cookies.set('session', '');
-      ctx.status = StatusCode.UNAUTHORIZED;
-      ctx.body = 'User not found';
-      return;
-    }
-
-    ctx.state.session = validated.data;
+    ctx.state.session = session;
     ctx.state.user = user;
 
     await route(ctx);
