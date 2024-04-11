@@ -29,7 +29,7 @@ export class Services {
   constructor(config: Config) {
     this.database = new Database(config.dbUrl);
     this.redis = new Redis();
-    this.videoStorage = new VideoStorage();
+    this.videoStorage = new VideoStorage(config.videoStorage);
     this.auth = new Auth();
   }
 }

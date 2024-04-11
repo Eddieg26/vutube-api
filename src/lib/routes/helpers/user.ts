@@ -41,7 +41,7 @@ export async function findUser(database: Database, identifier: string) {
   return first(result);
 }
 
-export async function createUser(database: Database, user: User) {
+export async function insertUser(database: Database, user: User) {
   const result = await database.insert(usersTable).values(user).returning();
 
   return first(result);

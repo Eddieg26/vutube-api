@@ -3,7 +3,12 @@ import {Context} from '../../services';
 import {omit} from 'radash';
 import {StatusCode} from '../../types';
 import {route, validate} from '../middleware';
-import {createUser, findUserByEmail, raise} from '../helpers';
+import {
+  insertUser,
+  findUserByEmail,
+  findUserByUsername,
+  raise,
+} from '../helpers';
 
 async function signup(args: Signup, ctx: Context) {
   const {auth, database} = ctx.services;
@@ -13,14 +18,14 @@ async function signup(args: Signup, ctx: Context) {
   if (foundEmail)
     return raise(StatusCode.CONFLICT, 'User with email already exists');
 
-  const foundUsername = await findUserByEmail(database, email);
+  const foundUsername = await findUserByUsername(database, username);
   if (foundUsername)
     return raise(StatusCode.CONFLICT, 'Username already exists');
 
   const id = database.generateId();
   const password = await auth.hashPassword(args.password);
 
-  const user = await createUser(database, {id, email, username, password});
+  const user = await insertUser(database, {id, email, username, password});
   if (!user) return raise(StatusCode.SERVER_ERROR, 'Failed to create user');
 
   return omit(user, ['password']);

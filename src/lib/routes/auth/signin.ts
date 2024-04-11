@@ -8,7 +8,7 @@ import {findUser, raise} from '../helpers';
 async function signin(args: Signin, ctx: Context) {
   const {auth, database} = ctx.services;
   const {identifier, password} = args;
-
+  
   const user = await findUser(database, identifier);
   if (!user) return raise(StatusCode.NOT_FOUND, 'User not found');
 

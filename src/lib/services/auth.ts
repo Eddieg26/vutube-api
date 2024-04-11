@@ -43,11 +43,15 @@ export class Auth {
     });
 
     if (!validated.success) return null;
-    return validated.data;
+    return new Session(
+      validated.data.id,
+      validated.data.userId,
+      validated.data.expiresAt
+    );
   }
 
   setSessionCookie(ctx: Context, session: Session) {
-    const token = jwt.sign({id: session.id}, ctx.state.config.jwtSecret, {
+    const token = jwt.sign(session.data(), ctx.state.config.jwtSecret, {
       expiresIn: '30d',
     });
 

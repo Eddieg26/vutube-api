@@ -1,10 +1,18 @@
 import {number, object, string, enum as zenum} from 'zod';
 
+export type VideoStorageConfig = {
+  url: string;
+  cdn: string;
+  library: number;
+  key: string;
+};
+
 export class Config {
   port: number;
   env: Environment;
   dbUrl: string;
   jwtSecret: string;
+  videoStorage: VideoStorageConfig;
 
   constructor() {
     this.port = process.env.PORT
@@ -13,6 +21,12 @@ export class Config {
     this.env = process.env.ENV as Environment;
     this.dbUrl = process.env.DB_URL as string;
     this.jwtSecret = process.env.JWT_SECRET as string;
+    this.videoStorage = {
+      url: process.env.VIDEO_STORAGE_URL as string,
+      cdn: process.env.VIDEO_STORAGE_CDN_URL as string,
+      library: parseInt(process.env.VIDEO_STORAGE_LIBRARY as string),
+      key: process.env.VIDEO_STORAGE_KEY as string,
+    };
   }
 
   validate(): Config {
@@ -22,6 +36,7 @@ export class Config {
       env: this.env,
       dbUrl: this.dbUrl,
       jwtSecret: this.jwtSecret,
+      videoStorage: this.videoStorage,
     });
 
     if (!validated.success) {
@@ -38,6 +53,12 @@ export class Config {
       env: zenum(['development', 'production', 'test'] as const),
       dbUrl: string(),
       jwtSecret: string(),
+      videoStorage: object({
+        url: string(),
+        cdn: string(),
+        library: number(),
+        key: string(),
+      }),
     });
   }
 }
@@ -86,3 +107,7 @@ export class ServerError extends Error {
     return new ServerError(status, message, meta);
   }
 }
+
+export type Result<T> =
+  | {data: T; error: undefined}
+  | {data: undefined; error: ServerError};

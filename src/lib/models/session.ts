@@ -8,4 +8,12 @@ export class Session {
     this.userId = userId;
     this.expiresAt = expiresAt;
   }
+
+  data() {
+    return {
+      id: this.id,
+      userId: this.userId,
+      expiresAt: this.expiresAt.toISOString(),
+    };
+  }
 }

@@ -16,9 +16,9 @@ async function getUser(id: string, ctx: Context) {
 }
 
 const schema = string({
-  invalid_type_error: 'Id must be a string',
+  invalid_type_error: 'Id must be a uuid',
   required_error: 'Id is required',
-}).length(24);
+}).uuid();
 
 export default route(
   '/:id',
