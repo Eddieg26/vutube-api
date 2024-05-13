@@ -1,11 +1,11 @@
 import dayjs = require('dayjs');
 import jwt = require('jsonwebtoken');
 import bcrypt = require('bcrypt');
-import {Session} from '../models';
-import {date, object, string} from 'zod';
-import {v4 as uuid} from 'uuid';
-import {Context} from '.';
-import {StatusCode} from '../types';
+import { v4 as uuid } from 'uuid';
+import { date, object, string } from 'zod';
+import { Context } from '.';
+import { Session } from '../models';
+import { StatusCode } from '../types';
 
 const sessionSchema = object({
   id: string(),
@@ -17,7 +17,7 @@ export class Auth {
   constructor() {}
 
   createSession(userId: string): Session {
-    return new Session(uuid(), userId, dayjs().add(1, 'month').toDate());
+    return {id: uuid(), userId, expiresAt: dayjs().add(1, 'month').toDate()};
   }
 
   hashPassword(password: string): Promise<string> {
@@ -43,15 +43,11 @@ export class Auth {
     });
 
     if (!validated.success) return null;
-    return new Session(
-      validated.data.id,
-      validated.data.userId,
-      validated.data.expiresAt
-    );
+    return validated.data;
   }
 
   setSessionCookie(ctx: Context, session: Session) {
-    const token = jwt.sign(session.data(), ctx.state.config.jwtSecret, {
+    const token = jwt.sign(session, ctx.state.config.jwtSecret, {
       expiresIn: '30d',
     });
 

@@ -1,15 +1,15 @@
-import {object, string} from 'zod';
-import {Context} from '../../services';
-import {route, validate} from '../middleware';
-import {StatusCode} from '../../types';
-import {omit} from 'radash';
-import {findUser, raise} from '../helpers';
+import { omit } from 'radash';
+import { object, string } from 'zod';
+import { Context } from '../../services';
+import { StatusCode } from '../../types';
+import { findUserByEmail, raise } from '../helpers';
+import { route, validate } from '../middleware';
 
 async function signin(args: Signin, ctx: Context) {
   const {auth, database} = ctx.services;
-  const {identifier, password} = args;
-  
-  const user = await findUser(database, identifier);
+  const {email, password} = args;
+
+  const user = await findUserByEmail(database, email);
   if (!user) return raise(StatusCode.NOT_FOUND, 'User not found');
 
   const valid = await auth.comparePassword(password, user.password);
@@ -21,7 +21,7 @@ async function signin(args: Signin, ctx: Context) {
 }
 
 const schema = object({
-  identifier: string().min(1),
+  email: string().min(1),
   password: string().min(8),
 });
 

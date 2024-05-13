@@ -1,2 +1,4 @@
-export {User, usersTable} from './user';
-export {Session} from './session';
+export { accountsTable, type Account } from './account';
+export type { Session } from './session';
+export { usersTable, type User } from './user';
+
