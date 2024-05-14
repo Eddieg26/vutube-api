@@ -1,0 +1,5 @@
+// Blog (Reddit/Discord)
+// Social Media (Twitter/Instagram)
+// Video/Podcast (Youtube)
+// Exclusive Content (Patreon)
+// E-commerce (Shopify)
