@@ -2,6 +2,7 @@ import 'dotenv/config';
 import {
   App,
   Config,
+  accountRouter,
   authRouter,
   bodyParser,
   notFound,
@@ -16,6 +17,7 @@ async function main() {
   app.router(authRouter);
   app.router(userRouter);
   app.router(videoRouter);
+  app.router(accountRouter);
   app.use(notFound);
 
   const server = await app.run();

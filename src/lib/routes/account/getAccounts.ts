@@ -1,18 +1,21 @@
-import { omit } from 'radash';
+import { eq } from 'drizzle-orm';
 import { string } from 'zod';
+import { accountsTable } from '../../models';
 import { Context } from '../../services';
 import { StatusCode } from '../../types';
-import { findUserById, raise } from '../helpers';
+import { raise } from '../helpers';
 import { authenticate, route, validate } from '../middleware';
 
-async function getUser(id: string, ctx: Context) {
+async function getAccounts(id: string, ctx: Context) {
   if (ctx.state.user?.id !== id)
     return raise(StatusCode.FORBIDDEN, 'Forbidden', {id});
 
-  const user = await findUserById(ctx.services.database, id);
-  if (!user) return raise(StatusCode.NOT_FOUND, 'User not found', {id});
+  const accounts = await ctx.services.database
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.user_id, id));
 
-  return omit(user, ['password']);
+  return {accounts};
 }
 
 const schema = string({
@@ -21,6 +24,6 @@ const schema = string({
 }).uuid();
 
 export default route(
-  '/:id',
-  authenticate(validate(schema, ctx => ctx.query.id as string, getUser))
+  '/user/:id',
+  authenticate(validate(schema, ctx => ctx.query.id as string, getAccounts))
 );
